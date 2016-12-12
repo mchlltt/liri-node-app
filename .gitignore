@@ -1,3 +1,9 @@
+# Secrets
+keys.js
+
+# OS
+.DS_Store
+
 # Logs
 logs
 *.log
