@@ -4,8 +4,9 @@ var spotify = require('spotify');
 var request = require('request');
 var fs = require('fs');
 var inquirer = require('inquirer');
-var preferences = require('preferences');
 var clear = require('clear');
+var figlet = require('figlet');
+var chalk = require('chalk');
 
 // Import Twitter API secrets from keys.js
 var keys = require('./keys.js');
@@ -35,47 +36,6 @@ var mainQuestion = {
         }
     ]
 };
-
-// Validation for required questions.
-var requiredQuestion = function (answer) {
-    if (answer.length) {
-        return true;
-    } else {
-        return 'This question is required.';
-    }
-};
-
-var twitterLoginNeeded = function () {
-    return true;
-    // true unless we a login saved.
-    // also true if the login fails.
-};
-
-// Twitter authentication.
-// Add in logic for whether these questions actually get asked.
-var twitterFollowUp = [
-    {
-        type: 'input',
-        name: 'twitterUsername',
-        message: 'What is your Twitter username?',
-        validate: requiredQuestion,
-        when: twitterLoginNeeded
-    },
-    {
-        type: 'password',
-        name: 'twitterPassword',
-        message: 'What is your Twitter password?',
-        validate: requiredQuestion,
-        when: twitterLoginNeeded
-    },
-    {
-        type: 'confirm',
-        name: 'saveTwitterLogin',
-        message: 'Remember this login for future use?',
-        default: false,
-        when: twitterLoginNeeded
-    }
-];
 
 // Spotify search term.
 var spotifyFollowUp = [
@@ -127,32 +87,53 @@ var doWhatItSays = function () {
         if (err) {
             return console.log(err);
         }
-        console.log(data);
+        data = data.split(',');
+        data = {
+            command: data[0],
+            query: data[1]
+        };
+        processInitialAnswer(data);
     });
 };
 
 // Clear the terminal.
 clear();
+console.log(
+    chalk.cyan(
+        figlet.textSync('liri', { horizontalLayout: 'full' })
+    )
+);
+
+var processInitialAnswer = function(answers) {
+    switch (answers.command) {
+        case 'my-tweets':
+            twitterCall();
+            break;
+        case 'spotify-this-song':
+            if (!answers.query) {
+                followUpQuestion(spotifyFollowUp);
+            } else {
+                answers.song = answers.query;
+                answers.artist = '';
+                spotifyCall(answers);
+            }
+            break;
+        case 'movie-this':
+            if (!answers.query) {
+                followUpQuestion(movieFollowUp);
+            } else {
+                answers.movie = answers.query;
+                omdbCall(answers);
+            }
+            break;
+        case 'do-what-it-says':
+            doWhatItSays();
+            break;
+    }
+};
 
 // Initial question inquirer prompt.
-inquirer.prompt(mainQuestion).then(
-    function (answers) {
-        switch (answers.command) {
-            case 'my-tweets':
-                followUpQuestion(twitterFollowUp);
-                break;
-            case 'spotify-this-song':
-                followUpQuestion(spotifyFollowUp);
-                break;
-            case 'movie-this':
-                followUpQuestion(movieFollowUp);
-                break;
-            case 'do-what-it-says':
-                doWhatItSays();
-                break;
-        }
-    }
-);
+inquirer.prompt(mainQuestion).then(processInitialAnswer);
 
 var omdbCall = function (answers) {
     if (answers.movie.length === 0) {
@@ -161,6 +142,7 @@ var omdbCall = function (answers) {
     request('http://www.omdbapi.com/?t=' + answers.movie + '&y=&plot=short&r=json&tomatoes=true', function (error, response) {
         var body = JSON.parse(response.body);
         if (!error && response.statusCode == 200 && body.Error === undefined) {
+            console.log(chalk.yellow('Results:'));
             console.log('  Title: ' + body.Title);
             console.log('  Release Year: ' + body.Year);
             console.log('  IMDB Rating: ' + body.imdbRating);
@@ -192,6 +174,7 @@ var displaySpotifyResults = function(err, data) {
     if (err) {
         return console.log('Sorry, an error occurred. Please check your query and try again.');
     }
+    console.log(chalk.yellow('Results:'));
     console.log('  Artist: ' + data.tracks.items[0].artists[0].name);
     console.log('  Track Name: ' + data.tracks.items[0].name);
     console.log('  Song preview: ' + data.tracks.items[0].preview_url);
