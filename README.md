@@ -9,6 +9,7 @@ A command-line Language Interpretation and Recognition Interface node applicatio
   * inquirer
   * chalk 
   * figlet
+  * clear
 * WebStorm IDE
 
 ## Prerequisites
@@ -23,6 +24,7 @@ Note: If you would like to test the program without a Twitter account, feel free
 3. Visit your Twitter developer account and click the Keys and Access Tokens tab to get your consume key and secret. Copy and paste them where the `<input here>` tags are inside your keys-blank.js file.
 4. At the bottom of the same page, click the `Create my access token` button to get your access token key and secret. Copy the access token key and secret displayed at the bottom of the next screen. Paste them where the `<input here>` tags are inside keys-blank.js.
 5. Save keys-blank.js as keys.js.
+6. Add your twitter username on line 220.
 6. Open a Terminal window or other Bash and navigate to the project folder. 
 7. Run `npm install` to install the program's dependences. 
 8. Run `node liri.js`.
