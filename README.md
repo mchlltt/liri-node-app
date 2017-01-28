@@ -1,5 +1,5 @@
 # liri
-A command-line Language Interpretation and Recognition Interface node application. This application can provide data about a given movie or music trackb and can display the user's 20 most recent tweets.
+A command-line Language Interpretation and Recognition Interface node application. This application can provide data about a given movie or music tracks and can display the user's 20 most recent tweets.
 
 ## Technologies Used
 * Node.js
